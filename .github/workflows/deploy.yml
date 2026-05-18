@@ -18,4 +18,4 @@ jobs:
             cd /opt/training-plan
             git pull origin main
             docker compose up -d --build app bot
-            docker restart training-plan-nginx-1
+            docker compose restart nginx
