@@ -111,6 +111,20 @@ createApp({
 
     function toggleFilter(type) {
       activeFilter.value = activeFilter.value === type ? null : type;
+      // When filter is active, expand all weeks; when deactivated, re-collapse done weeks
+      if (activeFilter.value) {
+        const newCollapsed = {};
+        for (const wk of weeks.value) {
+          newCollapsed[wk.week] = false;
+        }
+        collapsed.value = newCollapsed;
+      } else {
+        const newCollapsed = {};
+        for (const wk of weeks.value) {
+          newCollapsed[wk.week] = wk.runs.length > 0 && wk.runs.every(r => r.done);
+        }
+        collapsed.value = newCollapsed;
+      }
     }
 
     function filteredRuns(wk) {
