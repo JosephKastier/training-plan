@@ -1,0 +1,352 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --easy: #10b981;
+  --tempo: #f59e0b;
+  --int: #ef4444;
+  --long: #6366f1;
+  --race: #a855f7;
+  --radius: 12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Login */
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 40px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.login-card h1 {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-card input:focus {
+  border-color: var(--accent);
+}
+
+.login-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.login-card button:hover {
+  opacity: 0.9;
+}
+
+.error {
+  color: var(--int);
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* Container */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Progress */
+.progress-bar {
+  height: 6px;
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--easy), var(--accent));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Week Cards */
+.week-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.week-header:active {
+  background: var(--surface-hover);
+}
+
+.week-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.week-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.week-dates {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.week-km {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.week-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chevron {
+  transition: transform 0.2s;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Runs */
+.week-runs {
+  border-top: 1px solid var(--border);
+}
+
+.run-row {
+  display: grid;
+  grid-template-columns: 36px 32px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: opacity 0.2s;
+}
+
+.run-row:last-child {
+  border-bottom: none;
+}
+
+.run-row.done {
+  opacity: 0.5;
+}
+
+.run-row.done .run-text {
+  text-decoration: line-through;
+}
+
+/* Checkbox */
+.checkbox-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.checkbox-wrap input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-wrap input:checked + .checkmark {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox-wrap input:checked + .checkmark::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* Run details */
+.run-day {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.run-text {
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.run-km {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.run-pace {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Badges */
+.badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: white;
+}
+
+.badge.easy { background: var(--easy); }
+.badge.tempo { background: var(--tempo); color: #000; }
+.badge.int { background: var(--int); }
+.badge.long { background: var(--long); }
+.badge.race { background: var(--race); }
+
+/* Transitions */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+/* Pull to refresh */
+.pull-indicator {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+
+.pull-indicator.visible {
+  opacity: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .run-row {
+    grid-template-columns: 36px 28px 1fr auto;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  .run-pace {
+    display: none;
+  }
+
+  .run-text {
+    font-size: 13px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}

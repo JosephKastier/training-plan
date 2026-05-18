@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Training">
+  <meta name="theme-color" content="#0f172a">
+  <title>Trainingsplan</title>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Login -->
+    <div v-if="!token" class="login-screen">
+      <div class="login-card">
+        <h1>🏃 Trainingsplan</h1>
+        <form @submit.prevent="login">
+          <input type="password" v-model="password" placeholder="Passwort" autofocus>
+          <button type="submit">Anmelden</button>
+        </form>
+        <p v-if="loginError" class="error">{{ loginError }}</p>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div v-else class="container">
+      <div class="pull-indicator" :class="{ visible: pulling }">↓ Aktualisieren</div>
+      <header>
+        <h1>🏃 Trainingsplan</h1>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+        </div>
+        <p class="progress-text">{{ doneCount }}/{{ totalCount }} erledigt ({{ progressPercent }}%)</p>
+      </header>
+
+      <div class="week-list">
+        <div v-for="wk in weeks" :key="wk.week" class="week-card" :class="{ collapsed: collapsed[wk.week] }">
+          <div class="week-header" @click="toggleWeek(wk.week)">
+            <div class="week-title">
+              <span class="week-name">{{ wk.week }}</span>
+              <span class="week-dates">{{ weekDateRange(wk) }}</span>
+              <span class="week-km">{{ weekKm(wk) }} km</span>
+            </div>
+            <div class="week-progress">
+              <span>{{ weekDone(wk) }}/{{ wk.runs.length }}</span>
+              <svg class="chevron" :class="{ open: !collapsed[wk.week] }" viewBox="0 0 24 24" width="20" height="20"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+          </div>
+          <transition name="slide">
+            <div v-show="!collapsed[wk.week]" class="week-runs">
+              <div v-for="run in wk.runs" :key="run.id" class="run-row" :class="{ done: run.done }">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" :checked="run.done" @change="toggleRun(run)">
+                  <span class="checkmark"></span>
+                </label>
+                <div class="run-day">{{ run.day }}</div>
+                <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span></div>
+                <div class="run-pace">{{ run.pace }}</div>
+                <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
+              </div>
+            </div>
+          </transition>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

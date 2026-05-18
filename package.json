@@ -1,0 +1,20 @@
+{
+  "name": "training-plan",
+  "version": "1.0.0",
+  "description": "Lauf Trainingsplan – Web App mit Telegram Bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "bot": "node bot.js",
+    "dev": "node server.js & node bot.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "grammy": "^1.30.0",
+    "groq-sdk": "^0.7.0"
+  }
+}
