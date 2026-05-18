@@ -168,6 +168,7 @@ bot.on('message:text', async (ctx) => {
   }
 
   if (parsed.action === 'delete') {
+    // Find run by date
     const weeks = await api('/api/weeks');
     let found = null;
     for (const wk of weeks) {
@@ -181,6 +182,32 @@ bot.on('message:text', async (ctx) => {
       return ctx.reply(`🗑️ Gelöscht: ${found.text} am ${found.date}`);
     }
     return ctx.reply('❌ Kein Lauf an diesem Datum gefunden.');
+  }
+
+  if (parsed.action === 'update') {
+    const weeks = await api('/api/weeks');
+    let found = null;
+    for (const wk of weeks) {
+      for (const run of wk.runs) {
+        if (run.date === parsed.date) { found = run; break; }
+      }
+      if (found) break;
+    }
+    if (!found) return ctx.reply('❌ Kein Lauf an diesem Datum gefunden.');
+
+    const updates = {};
+    if (parsed.text) updates.text = parsed.text;
+    if (parsed.type) updates.type = parsed.type;
+    if (parsed.km) updates.km = parsed.km;
+    if (parsed.pace) updates.pace = parsed.pace;
+
+    await api(`/api/runs/${found.id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+    const d = parsed.date.split('-');
+    return ctx.reply(
+      `✏️ Aktualisiert (${d[2]}.${d[1]}.):\n` +
+      `🏃 ${parsed.text || found.text}\n` +
+      `📏 ${parsed.km || found.km} km | ${parsed.type || found.type}`
+    );
   }
 
   ctx.reply(`🤷 Konnte Aktion "${parsed.action}" nicht ausführen. Versuche es anders.`);
