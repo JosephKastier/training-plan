@@ -117,6 +117,10 @@ createApp({
       if (!activeFilter.value) return wk.runs;
       return wk.runs.filter(r => r.type === activeFilter.value);
     }
+
+    function filterCount(type) {
+      return weeks.value.reduce((sum, wk) => sum + wk.runs.filter(r => r.type === type).length, 0);
+    }
     let touchStartY = 0;
 
     onMounted(() => {
@@ -146,7 +150,7 @@ createApp({
 
     return {
       token, password, loginError, weeks, collapsed, pulling,
-      activeFilter, filters, toggleFilter, filteredRuns,
+      activeFilter, filters, toggleFilter, filteredRuns, filterCount,
       login, toggleRun, toggleWeek, weekKm, weekDone, weekDateRange,
       formatDate, typeLabel, totalCount, doneCount, progressPercent
     };

@@ -36,7 +36,7 @@
         </div>
         <p class="progress-text">{{ doneCount }}/{{ totalCount }} erledigt ({{ progressPercent }}%)</p>
         <div class="filters">
-          <button v-for="f in filters" :key="f.type" class="filter-btn" :class="[f.type, { active: activeFilter === f.type }]" @click="toggleFilter(f.type)">{{ f.label }}</button>
+          <button v-for="f in filters" :key="f.type" class="filter-btn" :class="[f.type, { active: activeFilter === f.type }]" @click="toggleFilter(f.type)">{{ f.label }} <span class="filter-count">{{ filterCount(f.type) }}</span></button>
         </div>
       </header>
 
