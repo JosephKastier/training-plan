@@ -55,11 +55,18 @@ bot.command('start', (ctx) => {
     'Befehle:\n' +
     '/plan – Nächste anstehende Läufe\n' +
     '/done – Nächsten Lauf als erledigt markieren\n' +
-    '/progress – Fortschritt anzeigen\n\n' +
+    '/progress – Fortschritt anzeigen\n' +
+    '/delete DD.MM. – Lauf löschen\n' +
+    '/myid – Deine Chat-ID anzeigen\n\n' +
     'Oder schreib einfach natürliche Sprache:\n' +
     '"19.5. Halbmarathon Stuttgart"\n' +
     '"Nächsten Dienstag 8km locker"'
   );
+});
+
+// /myid
+bot.command('myid', (ctx) => {
+  ctx.reply(`Deine Chat-ID: ${ctx.chat.id}`);
 });
 
 // /plan – show next runs
