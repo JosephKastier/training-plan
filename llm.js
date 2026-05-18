@@ -32,8 +32,10 @@ Antworte NUR mit validem JSON im Format:
   "week": "W1-W22 (basierend auf Datum, W1 startet 21.04.2026)"
 }
 
-Bei "update": Gib "date" an um den Lauf zu identifizieren, und nur die Felder die sich ändern.
+Bei "update": Gib "date" an um den Lauf zu identifizieren, und ALLE Felder die sich ändern sollen (text, type, km, pace).
+Gib immer "text" mit an wenn sich die Beschreibung des Laufs ändert.
 Beispiel: "Ändere 19.05. auf 10km Tempo" → {"action":"update","date":"2026-05-19","text":"10 km Tempo","type":"tempo","km":10,"pace":"5:10–5:20"}
+Beispiel: "19.05. soll Halbmarathon Stuttgart sein" → {"action":"update","date":"2026-05-19","text":"Halbmarathon Stuttgart","type":"race","km":21,"pace":"4:45–4:50"}
 
 Wenn du das Datum nicht eindeutig bestimmen kannst, frag nach. Für Wettkämpfe setze immer type: "race".
 Berechne die Woche basierend auf dem Datum (W1 = 21.04.–27.04.2026, W2 = 28.04.–04.05.2026, etc.).`;
