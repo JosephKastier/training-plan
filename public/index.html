@@ -30,11 +30,14 @@
     <div v-else class="container">
       <div class="pull-indicator" :class="{ visible: pulling }">↓ Aktualisieren</div>
       <header>
-        <h1>🏃 Trainingsplan bis Baden-Marathon</h1>
+        <h1>🏃 Trainingsplan</h1>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
         </div>
         <p class="progress-text">{{ doneCount }}/{{ totalCount }} erledigt ({{ progressPercent }}%)</p>
+        <div class="filters">
+          <button v-for="f in filters" :key="f.type" class="filter-btn" :class="[f.type, { active: activeFilter === f.type }]" @click="toggleFilter(f.type)">{{ f.label }}</button>
+        </div>
       </header>
 
       <div class="week-list">
@@ -52,7 +55,7 @@
           </div>
           <transition name="slide">
             <div v-show="!collapsed[wk.week]" class="week-runs">
-              <div v-for="run in wk.runs" :key="run.id" class="run-row" :class="{ done: run.done }">
+              <div v-for="run in filteredRuns(wk)" :key="run.id" class="run-row" :class="{ done: run.done }">
                 <label class="checkbox-wrap">
                   <input type="checkbox" :checked="run.done" @change="toggleRun(run)">
                   <span class="checkmark"></span>

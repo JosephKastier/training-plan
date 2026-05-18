@@ -101,6 +101,22 @@ createApp({
     }
 
     const pulling = ref(false);
+    const activeFilter = ref(null);
+    const filters = [
+      { type: 'race', label: 'Race' },
+      { type: 'easy', label: 'Locker' },
+      { type: 'long', label: 'Long' },
+      { type: 'int', label: 'Intervalle' },
+    ];
+
+    function toggleFilter(type) {
+      activeFilter.value = activeFilter.value === type ? null : type;
+    }
+
+    function filteredRuns(wk) {
+      if (!activeFilter.value) return wk.runs;
+      return wk.runs.filter(r => r.type === activeFilter.value);
+    }
     let touchStartY = 0;
 
     onMounted(() => {
@@ -130,6 +146,7 @@ createApp({
 
     return {
       token, password, loginError, weeks, collapsed, pulling,
+      activeFilter, filters, toggleFilter, filteredRuns,
       login, toggleRun, toggleWeek, weekKm, weekDone, weekDateRange,
       formatDate, typeLabel, totalCount, doneCount, progressPercent
     };

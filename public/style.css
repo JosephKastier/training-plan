@@ -132,6 +132,36 @@ header h1 {
   color: var(--text-muted);
 }
 
+/* Filters */
+.filters {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.filter-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-btn.active {
+  color: white;
+  border-color: transparent;
+}
+
+.filter-btn.active.race { background: var(--race); }
+.filter-btn.active.easy { background: var(--easy); }
+.filter-btn.active.long { background: var(--long); }
+.filter-btn.active.int { background: var(--int); }
+
 /* Week Cards */
 .week-card {
   background: var(--surface);
