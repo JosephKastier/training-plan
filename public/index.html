@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Training">
   <meta name="theme-color" content="#0f172a">
-  <title>Trainingsplan</title>
+  <title>Project 3:45:00</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
   <link rel="stylesheet" href="/style.css">
@@ -18,7 +18,7 @@
     <!-- Login -->
     <div v-if="!token" class="login-screen">
       <div class="login-card">
-        <h1>🏃 Trainingsplan</h1>
+        <h1>🏃 Project 3:45:00</h1>
         <form @submit.prevent="login">
           <input type="password" v-model="password" placeholder="Passwort" autofocus>
           <button type="submit">Anmelden</button>
@@ -31,7 +31,7 @@
     <div v-else class="container">
       <div class="pull-indicator" :class="{ visible: pulling }">↓ Aktualisieren</div>
       <header>
-        <h1>🏃 Trainingsplan</h1>
+        <h1>🏃 Project 3:45:00</h1>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
         </div>
