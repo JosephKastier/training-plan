@@ -117,6 +117,7 @@ createApp({
       { type: 'easy', label: 'Locker' },
       { type: 'long', label: 'Long' },
       { type: 'int', label: 'Intervalle' },
+      { type: 'tempo', label: 'Tempo' },
     ];
 
     function toggleFilter(type) {
