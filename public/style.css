@@ -161,6 +161,7 @@ header h1 {
 .filter-btn.active.easy { background: var(--easy); }
 .filter-btn.active.long { background: var(--long); }
 .filter-btn.active.int { background: var(--int); }
+.filter-btn.active.tempo { background: var(--tempo); }
 
 .filter-count {
   opacity: 0.7;
