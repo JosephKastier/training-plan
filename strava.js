@@ -124,6 +124,8 @@ function syncActivityToRun(activity) {
   const actual_km = Math.round((activity.distance / 1000) * 100) / 100;
   const actual_pace = calculatePace(activity.moving_time, activity.distance);
   const avg_hr = activity.average_heartrate ? Math.round(activity.average_heartrate) : null;
+  const polyline = activity.map?.summary_polyline || null;
+  const photo_url = activity.photos?.primary?.urls?.['600'] || null;
 
   queries.saveStravaData({
     run_id: run.id,
@@ -131,7 +133,9 @@ function syncActivityToRun(activity) {
     actual_km,
     actual_pace,
     avg_hr,
-    elapsed_time: activity.moving_time
+    elapsed_time: activity.moving_time,
+    polyline,
+    photo_url
   });
 
   // Mark run as done if not already

@@ -43,10 +43,16 @@ db.exec(`
     actual_pace TEXT,
     avg_hr INTEGER,
     elapsed_time INTEGER,
+    polyline TEXT,
+    photo_url TEXT,
     synced_at TEXT,
     UNIQUE(run_id)
   );
 `);
+
+// Migrate: add polyline and photo_url columns if missing
+try { db.prepare('ALTER TABLE strava_data ADD COLUMN polyline TEXT').run(); } catch(e) {}
+try { db.prepare('ALTER TABLE strava_data ADD COLUMN photo_url TEXT').run(); } catch(e) {}
 
 // Query helpers
 const queries = {
@@ -144,11 +150,11 @@ const queries = {
     return db.prepare('SELECT * FROM strava_data').all();
   },
 
-  saveStravaData({ run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time }) {
+  saveStravaData({ run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time, polyline, photo_url }) {
     return db.prepare(
-      `INSERT OR REPLACE INTO strava_data (run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time, synced_at)
-       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
-    ).run(run_id, strava_id, actual_km, actual_pace, avg_hr || null, elapsed_time || null);
+      `INSERT OR REPLACE INTO strava_data (run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time, polyline, photo_url, synced_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+    ).run(run_id, strava_id, actual_km, actual_pace, avg_hr || null, elapsed_time || null, polyline || null, photo_url || null);
   },
 
   getRunByDate(date) {

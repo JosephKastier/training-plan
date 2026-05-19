@@ -1,4 +1,4 @@
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
 
 createApp({
   setup() {
@@ -148,7 +148,38 @@ createApp({
     function toggleStrava(run) {
       if (run.strava) {
         expandedRun.value = expandedRun.value === run.id ? null : run.id;
+        if (expandedRun.value === run.id && run.strava.polyline) {
+          nextTick(() => renderMap(run.id, run.strava.polyline));
+        }
       }
+    }
+
+    const mapInstances = {};
+    function renderMap(runId, polyline) {
+      const el = document.getElementById('map-' + runId);
+      if (!el || mapInstances[runId]) return;
+      const coords = decodePolyline(polyline);
+      if (!coords.length) return;
+      const map = L.map(el, { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      const line = L.polyline(coords, { color: '#3b82f6', weight: 3 }).addTo(map);
+      map.fitBounds(line.getBounds(), { padding: [10, 10] });
+      mapInstances[runId] = map;
+    }
+
+    function decodePolyline(encoded) {
+      const coords = [];
+      let i = 0, lat = 0, lng = 0;
+      while (i < encoded.length) {
+        let b, shift = 0, result = 0;
+        do { b = encoded.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+        lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+        shift = 0; result = 0;
+        do { b = encoded.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+        lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+        coords.push([lat / 1e5, lng / 1e5]);
+      }
+      return coords;
     }
 
     async function checkStrava() {

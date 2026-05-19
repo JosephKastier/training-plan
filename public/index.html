@@ -11,6 +11,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>">
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
   <div id="app">
@@ -72,6 +73,8 @@
                   <span class="strava-item">📏 {{ run.strava.actual_km.toString().replace('.', ',') }} km</span>
                   <span class="strava-item">⏱️ {{ run.strava.actual_pace }}/km</span>
                   <span class="strava-item" v-if="run.strava.avg_hr">❤️ {{ run.strava.avg_hr }} bpm</span>
+                  <div v-if="run.strava.polyline" class="strava-map" :id="'map-'+run.id" :data-polyline="run.strava.polyline"></div>
+                  <img v-if="run.strava.photo_url" :src="run.strava.photo_url" class="strava-photo" loading="lazy">
                 </div>
               </div>
             </div>
@@ -82,6 +85,7 @@
   </div>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
