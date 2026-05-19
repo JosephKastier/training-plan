@@ -64,9 +64,17 @@ createApp({
     function weekDateRange(wk) {
       if (!wk.runs.length) return '';
       const dates = wk.runs.map(r => r.date).sort();
-      const first = dates[0].split('-');
-      const last = dates[dates.length - 1].split('-');
-      return `${first[2]}.${first[1]}. – ${last[2]}.${last[1]}.`;
+      // Find Monday of that week
+      const first = new Date(dates[0]);
+      const dayOfWeek = first.getDay(); // 0=Sun, 1=Mon...
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(first);
+      monday.setDate(first.getDate() + mondayOffset);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const m = monday;
+      const s = sunday;
+      return `${String(m.getDate()).padStart(2,'0')}.${String(m.getMonth()+1).padStart(2,'0')}. – ${String(s.getDate()).padStart(2,'0')}.${String(s.getMonth()+1).padStart(2,'0')}.`;
     }
 
     function weekKm(wk) {

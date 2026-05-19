@@ -69,7 +69,7 @@
                   <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
                 </div>
                 <div v-if="run.strava && expandedRun === run.id" class="strava-details">
-                  <span class="strava-item">📏 {{ run.strava.actual_km }} km</span>
+                  <span class="strava-item">📏 {{ run.strava.actual_km.toString().replace('.', ',') }} km</span>
                   <span class="strava-item">⏱️ {{ run.strava.actual_pace }}/km</span>
                   <span class="strava-item" v-if="run.strava.avg_hr">❤️ {{ run.strava.avg_hr }} bpm</span>
                 </div>
