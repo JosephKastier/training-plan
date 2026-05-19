@@ -162,24 +162,25 @@ function syncActivityToRun(activity) {
 
   // Get all runs in this date range
   const weekRuns = queries.getRunsByDateRange(monday, sundayStr);
-  if (!weekRuns.length) return null;
+
+  // Determine the week name from existing runs, or skip if no week exists
+  const week = weekRuns.length ? weekRuns[0].week : null;
+  if (!week) return null;
 
   // Find an unmatched, non-skipped planned run (no strava_data entry yet)
   const allStrava = queries.getAllStravaData();
   const matchedRunIds = new Set(allStrava.map(s => s.run_id));
 
   const unmatchedRun = weekRuns.find(r => !matchedRunIds.has(r.id) && !r.skipped && !r.done);
-  if (!unmatchedRun) return null;
 
   // Create a new run entry for the actual day
-  const week = unmatchedRun.week;
   const newRun = queries.createRun({
     week,
     date: activityDate,
     day: getDayAbbr(activityDate),
     text: activity.name || `${actual_km} km Lauf`,
     pace: actual_pace,
-    type: unmatchedRun.type,
+    type: unmatchedRun ? unmatchedRun.type : 'easy',
     km: actual_km
   });
 
@@ -195,10 +196,12 @@ function syncActivityToRun(activity) {
     polyline, photo_url
   });
 
-  // Mark the original planned run as skipped
-  queries.markSkipped(unmatchedRun.id);
+  // Mark the original planned run as skipped (only if there was one)
+  if (unmatchedRun) {
+    queries.markSkipped(unmatchedRun.id);
+  }
 
-  return { run: { ...unmatchedRun, id: newRunId }, actual_km, actual_pace, avg_hr };
+  return { run: { ...( unmatchedRun || { week }), id: newRunId }, actual_km, actual_pace, avg_hr };
 }
 
 // Sync recent activities (for /sync command or initial sync)
