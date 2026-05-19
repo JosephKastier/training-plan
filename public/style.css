@@ -385,3 +385,43 @@ header h1 {
     padding: 2px 6px;
   }
 }
+
+/* Strava */
+.strava-btn {
+  background: #fc4c02;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.accuracy-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.accuracy-dot.green { background: #10b981; }
+.accuracy-dot.yellow { background: #f59e0b; }
+.accuracy-dot.red { background: #ef4444; }
+
+.run-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.strava-details {
+  display: flex;
+  gap: 12px;
+  padding: 4px 12px 8px 44px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.strava-item {
+  white-space: nowrap;
+}

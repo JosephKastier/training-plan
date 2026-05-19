@@ -100,6 +100,20 @@ bot.command('progress', async (ctx) => {
   ctx.reply(`📊 Fortschritt: ${data.done}/${data.total} (${pct}%)`);
 });
 
+// /sync – manually sync Strava activities
+bot.command('sync', async (ctx) => {
+  await ctx.reply('🔄 Synchronisiere Strava-Aktivitäten...');
+  try {
+    const result = await api('/api/strava/sync', { method: 'POST' });
+    if (result.error) return ctx.reply(`❌ Fehler: ${result.error}`);
+    if (result.synced === 0) return ctx.reply('Keine neuen Aktivitäten gefunden.');
+    const lines = result.results.map(r => `✅ ${r.run.date} – ${r.actual_km}km @ ${r.actual_pace}/km${r.avg_hr ? ` | ❤️ ${r.avg_hr}` : ''}`);
+    ctx.reply(`🔄 ${result.synced} Aktivität(en) synchronisiert:\n\n${lines.join('\n')}`);
+  } catch (err) {
+    ctx.reply(`❌ Sync fehlgeschlagen: ${err.message}`);
+  }
+});
+
 // /delete <datum> – Lauf an einem Datum löschen
 bot.command('delete', async (ctx) => {
   const input = ctx.message.text.replace('/delete', '').trim();

@@ -26,6 +26,26 @@ db.exec(`
     done INTEGER DEFAULT 0,
     sort_order INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS strava_tokens (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    athlete_id INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS strava_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id INTEGER REFERENCES runs(id) ON DELETE CASCADE,
+    strava_id BIGINT UNIQUE,
+    actual_km REAL,
+    actual_pace TEXT,
+    avg_hr INTEGER,
+    elapsed_time INTEGER,
+    synced_at TEXT,
+    UNIQUE(run_id)
+  );
 `);
 
 // Query helpers
@@ -101,6 +121,42 @@ const queries = {
 
   getNextRuns(limit = 7) {
     return db.prepare('SELECT * FROM runs WHERE done = 0 ORDER BY date LIMIT ?').all(limit);
+  },
+
+  // Strava tokens
+  getStravaTokens() {
+    return db.prepare('SELECT * FROM strava_tokens WHERE id = 1').get();
+  },
+
+  saveStravaTokens({ access_token, refresh_token, expires_at, athlete_id }) {
+    return db.prepare(
+      `INSERT OR REPLACE INTO strava_tokens (id, access_token, refresh_token, expires_at, athlete_id)
+       VALUES (1, ?, ?, ?, ?)`
+    ).run(access_token, refresh_token, expires_at, athlete_id || null);
+  },
+
+  // Strava data
+  getStravaData(runId) {
+    return db.prepare('SELECT * FROM strava_data WHERE run_id = ?').get(runId);
+  },
+
+  getAllStravaData() {
+    return db.prepare('SELECT * FROM strava_data').all();
+  },
+
+  saveStravaData({ run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time }) {
+    return db.prepare(
+      `INSERT OR REPLACE INTO strava_data (run_id, strava_id, actual_km, actual_pace, avg_hr, elapsed_time, synced_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+    ).run(run_id, strava_id, actual_km, actual_pace, avg_hr || null, elapsed_time || null);
+  },
+
+  getRunByDate(date) {
+    return db.prepare('SELECT * FROM runs WHERE date = ?').get(date);
+  },
+
+  getRunsByDateRange(startDate, endDate) {
+    return db.prepare('SELECT * FROM runs WHERE date BETWEEN ? AND ? ORDER BY date').all(startDate, endDate);
   }
 };
 

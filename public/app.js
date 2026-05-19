@@ -102,6 +102,8 @@ createApp({
 
     const pulling = ref(false);
     const activeFilter = ref(null);
+    const expandedRun = ref(null);
+    const stravaConnected = ref(false);
     const filters = [
       { type: 'race', label: 'Race' },
       { type: 'easy', label: 'Locker' },
@@ -135,10 +137,24 @@ createApp({
     function filterCount(type) {
       return weeks.value.reduce((sum, wk) => sum + wk.runs.filter(r => r.type === type).length, 0);
     }
+    function toggleStrava(run) {
+      if (run.strava) {
+        expandedRun.value = expandedRun.value === run.id ? null : run.id;
+      }
+    }
+
+    async function checkStrava() {
+      const data = await api('/api/strava/status');
+      if (data) stravaConnected.value = data.connected;
+    }
+
     let touchStartY = 0;
 
     onMounted(() => {
-      if (token.value) loadAndCollapse();
+      if (token.value) {
+        loadAndCollapse();
+        checkStrava();
+      }
 
       // Reload data when app comes back to foreground
       document.addEventListener('visibilitychange', () => {
@@ -165,6 +181,7 @@ createApp({
     return {
       token, password, loginError, weeks, collapsed, pulling,
       activeFilter, filters, toggleFilter, filteredRuns, filterCount,
+      expandedRun, stravaConnected, toggleStrava,
       login, toggleRun, toggleWeek, weekKm, weekDone, weekDateRange,
       formatDate, typeLabel, totalCount, doneCount, progressPercent
     };

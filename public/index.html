@@ -37,6 +37,7 @@
         <p class="progress-text">{{ doneCount }}/{{ totalCount }} erledigt ({{ progressPercent }}%)</p>
         <div class="filters">
           <button v-for="f in filters" :key="f.type" class="filter-btn" :class="[f.type, { active: activeFilter === f.type }]" @click="toggleFilter(f.type)">{{ f.label }} <span class="filter-count">{{ filterCount(f.type) }}</span></button>
+          <a v-if="!stravaConnected" href="/auth/strava" class="strava-btn">Strava verbinden</a>
         </div>
       </header>
 
@@ -55,15 +56,23 @@
           </div>
           <transition name="slide">
             <div v-show="!collapsed[wk.week]" class="week-runs">
-              <div v-for="run in filteredRuns(wk)" :key="run.id" class="run-row" :class="{ done: run.done }">
-                <label class="checkbox-wrap">
-                  <input type="checkbox" :checked="run.done" @change="toggleRun(run)">
-                  <span class="checkmark"></span>
-                </label>
-                <div class="run-day">{{ run.day }}</div>
-                <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span></div>
-                <div class="run-pace">{{ run.pace }}</div>
-                <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
+              <div v-for="run in filteredRuns(wk)" :key="run.id" class="run-item">
+                <div class="run-row" :class="{ done: run.done }" @click="toggleStrava(run)">
+                  <label class="checkbox-wrap" @click.stop>
+                    <input type="checkbox" :checked="run.done" @change="toggleRun(run)">
+                    <span class="checkmark"></span>
+                  </label>
+                  <div class="run-day">{{ run.day }}</div>
+                  <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span></div>
+                  <div class="run-pace">{{ run.pace }}</div>
+                  <span class="accuracy-dot" v-if="run.accuracy" :class="run.accuracy.overall"></span>
+                  <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
+                </div>
+                <div v-if="run.strava && expandedRun === run.id" class="strava-details">
+                  <span class="strava-item">📏 {{ run.strava.actual_km }} km</span>
+                  <span class="strava-item">⏱️ {{ run.strava.actual_pace }}/km</span>
+                  <span class="strava-item" v-if="run.strava.avg_hr">❤️ {{ run.strava.avg_hr }} bpm</span>
+                </div>
               </div>
             </div>
           </transition>

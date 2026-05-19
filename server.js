@@ -3,12 +3,52 @@ const express = require('express');
 const path = require('path');
 const { queries } = require('./db');
 const { authMiddleware } = require('./auth');
+const strava = require('./strava');
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Auth for API routes
+// --- Strava OAuth (no auth required) ---
+app.get('/auth/strava', (req, res) => {
+  res.redirect(strava.getAuthUrl());
+});
+
+app.get('/auth/strava/callback', async (req, res) => {
+  const { code, error } = req.query;
+  if (error || !code) {
+    return res.redirect('/?strava=error');
+  }
+  try {
+    await strava.exchangeToken(code);
+    // Trigger initial sync
+    await strava.syncRecentActivities(60);
+    res.redirect('/?strava=connected');
+  } catch (err) {
+    console.error('Strava OAuth error:', err);
+    res.redirect('/?strava=error');
+  }
+});
+
+// --- Strava Webhook (no auth required) ---
+app.get('/webhook/strava', (req, res) => {
+  const challenge = strava.verifyWebhook(req.query);
+  if (challenge) return res.json(challenge);
+  res.status(403).json({ error: 'Invalid verify token' });
+});
+
+app.post('/webhook/strava', async (req, res) => {
+  // Respond immediately (Strava requires 200 within 2s)
+  res.status(200).json({ ok: true });
+  // Process async
+  try {
+    await strava.handleWebhookEvent(req.body);
+  } catch (err) {
+    console.error('Strava webhook error:', err);
+  }
+});
+
+// --- Auth for API routes ---
 app.use('/api', authMiddleware);
 
 // Login check
@@ -20,14 +60,46 @@ app.post('/api/login', (req, res) => {
   return res.status(401).json({ error: 'Wrong password' });
 });
 
-// Get all weeks
+// Get all weeks (with strava data)
 app.get('/api/weeks', (req, res) => {
-  res.json(queries.getAllWeeks());
+  const weeks = queries.getAllWeeks();
+  const allStrava = queries.getAllStravaData();
+  const stravaMap = {};
+  for (const s of allStrava) {
+    stravaMap[s.run_id] = s;
+  }
+  // Attach strava data and accuracy to each run
+  for (const week of weeks) {
+    for (const run of week.runs) {
+      const sd = stravaMap[run.id];
+      if (sd) {
+        run.strava = sd;
+        run.accuracy = strava.calculateAccuracy(run, sd);
+      }
+    }
+  }
+  res.json(weeks);
 });
 
 // Get progress
 app.get('/api/progress', (req, res) => {
   res.json(queries.getRunCount());
+});
+
+// Strava connection status
+app.get('/api/strava/status', (req, res) => {
+  const tokens = queries.getStravaTokens();
+  res.json({ connected: !!tokens });
+});
+
+// Manual sync
+app.post('/api/strava/sync', async (req, res) => {
+  try {
+    const results = await strava.syncRecentActivities(60);
+    res.json({ synced: results.length, results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Toggle done
