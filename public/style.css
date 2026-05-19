@@ -235,15 +235,16 @@ header h1 {
 
 .run-row {
   display: grid;
-  grid-template-columns: 36px 32px 1fr auto auto;
+  grid-template-columns: 36px 32px 1fr auto auto auto;
   gap: 8px;
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   transition: opacity 0.2s;
+  cursor: pointer;
 }
 
-.run-row:last-child {
+.run-item:last-child .run-row {
   border-bottom: none;
 }
 
@@ -367,7 +368,7 @@ header h1 {
 /* Mobile responsive */
 @media (max-width: 640px) {
   .run-row {
-    grid-template-columns: 36px 28px 1fr auto;
+    grid-template-columns: 36px 28px 1fr auto auto auto;
     gap: 6px;
     padding: 10px 12px;
   }
