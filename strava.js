@@ -147,7 +147,7 @@ async function syncRecentActivities(days = 30) {
   const now = Math.floor(Date.now() / 1000);
   const after = now - (days * 24 * 60 * 60);
 
-  const activities = await getActivities(after);
+  const activities = await getActivities(after, null, 1, 200);
   const results = [];
 
   for (const activity of activities) {
