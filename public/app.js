@@ -147,9 +147,23 @@ createApp({
     }
     function toggleStrava(run) {
       if (run.strava) {
-        expandedRun.value = expandedRun.value === run.id ? null : run.id;
-        if (expandedRun.value === run.id && run.strava.polyline) {
-          nextTick(() => renderMap(run.id, run.strava.polyline));
+        if (expandedRun.value === run.id) {
+          // Closing: destroy map
+          if (mapInstances[run.id]) {
+            mapInstances[run.id].remove();
+            delete mapInstances[run.id];
+          }
+          expandedRun.value = null;
+        } else {
+          // Close previous map if any
+          if (expandedRun.value && mapInstances[expandedRun.value]) {
+            mapInstances[expandedRun.value].remove();
+            delete mapInstances[expandedRun.value];
+          }
+          expandedRun.value = run.id;
+          if (run.strava.polyline) {
+            nextTick(() => renderMap(run.id, run.strava.polyline));
+          }
         }
       }
     }
