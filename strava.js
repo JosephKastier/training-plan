@@ -107,6 +107,21 @@ function calculatePace(movingTime, distanceMeters) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+// Helper: get Monday of a given date's week
+function getMonday(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+// Helper: day abbreviation from date
+function getDayAbbr(dateStr) {
+  const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  return days[new Date(dateStr).getDay()];
+}
+
 // Sync a single activity to a run
 function syncActivityToRun(activity) {
   // Get the date of the activity in YYYY-MM-DD format
@@ -117,33 +132,73 @@ function syncActivityToRun(activity) {
     return null;
   }
 
-  // Find matching run by date
-  const run = queries.getRunByDate(activityDate);
-  if (!run) return null;
-
   const actual_km = Math.round((activity.distance / 1000) * 100) / 100;
   const actual_pace = calculatePace(activity.moving_time, activity.distance);
   const avg_hr = activity.average_heartrate ? Math.round(activity.average_heartrate) : null;
   const polyline = activity.map?.summary_polyline || null;
   const photo_url = activity.photos?.primary?.urls?.['600'] || null;
 
-  queries.saveStravaData({
-    run_id: run.id,
-    strava_id: activity.id,
-    actual_km,
-    actual_pace,
-    avg_hr,
-    elapsed_time: activity.moving_time,
-    polyline,
-    photo_url
-  });
+  // Try direct date match first
+  let run = queries.getRunByDate(activityDate);
 
-  // Mark run as done if not already
-  if (!run.done) {
-    queries.toggleDone(run.id, true);
+  if (run) {
+    // Direct match – save strava data
+    queries.saveStravaData({
+      run_id: run.id,
+      strava_id: activity.id,
+      actual_km, actual_pace, avg_hr,
+      elapsed_time: activity.moving_time,
+      polyline, photo_url
+    });
+    if (!run.done) queries.toggleDone(run.id, true);
+    return { run, actual_km, actual_pace, avg_hr };
   }
 
-  return { run, actual_km, actual_pace, avg_hr };
+  // No direct match – find week by looking at Monday of this date
+  const monday = getMonday(activityDate);
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  const sundayStr = sunday.toISOString().split('T')[0];
+
+  // Get all runs in this date range
+  const weekRuns = queries.getRunsByDateRange(monday, sundayStr);
+  if (!weekRuns.length) return null;
+
+  // Find an unmatched, non-skipped planned run (no strava_data entry yet)
+  const allStrava = queries.getAllStravaData();
+  const matchedRunIds = new Set(allStrava.map(s => s.run_id));
+
+  const unmatchedRun = weekRuns.find(r => !matchedRunIds.has(r.id) && !r.skipped && !r.done);
+  if (!unmatchedRun) return null;
+
+  // Create a new run entry for the actual day
+  const week = unmatchedRun.week;
+  const newRun = queries.createRun({
+    week,
+    date: activityDate,
+    day: getDayAbbr(activityDate),
+    text: activity.name || `${actual_km} km Lauf`,
+    pace: actual_pace,
+    type: unmatchedRun.type,
+    km: actual_km
+  });
+
+  const newRunId = newRun.lastInsertRowid;
+  queries.toggleDone(newRunId, true);
+
+  // Save strava data for new run
+  queries.saveStravaData({
+    run_id: newRunId,
+    strava_id: activity.id,
+    actual_km, actual_pace, avg_hr,
+    elapsed_time: activity.moving_time,
+    polyline, photo_url
+  });
+
+  // Mark the original planned run as skipped
+  queries.markSkipped(unmatchedRun.id);
+
+  return { run: { ...unmatchedRun, id: newRunId }, actual_km, actual_pace, avg_hr };
 }
 
 // Sync recent activities (for /sync command or initial sync)

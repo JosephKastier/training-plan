@@ -53,6 +53,8 @@ db.exec(`
 // Migrate: add polyline and photo_url columns if missing
 try { db.prepare('ALTER TABLE strava_data ADD COLUMN polyline TEXT').run(); } catch(e) {}
 try { db.prepare('ALTER TABLE strava_data ADD COLUMN photo_url TEXT').run(); } catch(e) {}
+// Migrate: add skipped column to runs
+try { db.prepare('ALTER TABLE runs ADD COLUMN skipped INTEGER DEFAULT 0').run(); } catch(e) {}
 
 // Query helpers
 const queries = {
@@ -159,6 +161,14 @@ const queries = {
 
   getRunByDate(date) {
     return db.prepare('SELECT * FROM runs WHERE date = ?').get(date);
+  },
+
+  getRunsByWeek(week) {
+    return db.prepare('SELECT * FROM runs WHERE week = ? ORDER BY date, sort_order').all(week);
+  },
+
+  markSkipped(runId) {
+    return db.prepare('UPDATE runs SET skipped = 1, done = 0 WHERE id = ?').run(runId);
   },
 
   getRunsByDateRange(startDate, endDate) {

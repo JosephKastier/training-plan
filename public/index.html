@@ -58,13 +58,13 @@
           <transition name="slide">
             <div v-show="!collapsed[wk.week]" class="week-runs">
               <div v-for="run in filteredRuns(wk)" :key="run.id" class="run-item">
-                <div class="run-row" :class="{ done: run.done }" @click="toggleStrava(run)">
+                <div class="run-row" :class="{ done: run.done, skipped: run.skipped }" @click="toggleStrava(run)">
                   <label class="checkbox-wrap" @click.stop>
-                    <input type="checkbox" :checked="run.done" @change="toggleRun(run)">
+                    <input type="checkbox" :checked="run.done" @change="toggleRun(run)" :disabled="run.skipped">
                     <span class="checkmark"></span>
                   </label>
                   <div class="run-day">{{ run.day }}</div>
-                  <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span></div>
+                  <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span> <span v-if="run.skipped" class="skipped-label">Nicht gelaufen</span></div>
                   <div class="run-pace">{{ run.pace }}</div>
                   <span class="accuracy-dot" v-if="run.accuracy" :class="run.accuracy.overall"></span>
                   <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
