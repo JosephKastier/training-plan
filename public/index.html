@@ -48,7 +48,7 @@
             <div class="week-title">
               <span class="week-name">{{ wk.week }}</span>
               <span class="week-dates">{{ weekDateRange(wk) }}</span>
-              <span class="week-km">{{ weekKm(wk) }} km</span>
+              <span class="week-km">{{ formatKm(weekKm(wk)) }} km</span>
             </div>
             <div class="week-progress">
               <span>{{ weekDone(wk) }}/{{ wk.runs.length }}</span>
@@ -58,19 +58,16 @@
           <transition name="slide">
             <div v-show="!collapsed[wk.week]" class="week-runs">
               <div v-for="run in filteredRuns(wk)" :key="run.id" class="run-item">
-                <div class="run-row" :class="{ done: run.done, skipped: run.skipped }" @click="toggleStrava(run)">
-                  <label class="checkbox-wrap" @click.stop>
-                    <input type="checkbox" :checked="run.done" @change="toggleRun(run)" :disabled="run.skipped">
-                    <span class="checkmark"></span>
-                  </label>
+                <div class="run-row" :class="{ done: run.status==='done', skipped: run.status==='skipped' }" @click="toggleStrava(run)">
+                  <span class="status-icon" :class="run.status"></span>
                   <div class="run-day">{{ run.day }}</div>
-                  <div class="run-text">{{ run.text }} <span class="run-km">({{ run.km }} km)</span> <span v-if="run.skipped" class="skipped-label">Nicht gelaufen</span></div>
+                  <div class="run-text">{{ run.text }} <span class="run-km">({{ runKmLabel(run) }})</span> <span v-if="run.status==='skipped'" class="skipped-label">Nicht gelaufen</span></div>
                   <div class="run-pace">{{ run.pace }}</div>
                   <span class="accuracy-dot" v-if="run.accuracy" :class="run.accuracy.overall"></span>
                   <span class="badge" :class="run.type">{{ typeLabel(run.type) }}</span>
                 </div>
                 <div v-if="run.strava && expandedRun === run.id" class="strava-details">
-                  <span class="strava-item">📏 {{ run.strava.actual_km.toString().replace('.', ',') }} km</span>
+                  <span class="strava-item">📏 {{ formatKm(run.strava.actual_km) }} km</span>
                   <span class="strava-item">⏱️ {{ run.strava.actual_pace }}/km</span>
                   <span class="strava-item" v-if="run.strava.avg_hr">❤️ {{ run.strava.avg_hr }} bpm</span>
                   <div v-if="run.strava.polyline" class="strava-map" :id="'map-'+run.id" :data-polyline="run.strava.polyline"></div>

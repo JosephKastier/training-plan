@@ -54,10 +54,11 @@ bot.command('start', (ctx) => {
     '🏃 Trainingsplan Bot\n\n' +
     'Befehle:\n' +
     '/plan – Nächste anstehende Läufe\n' +
-    '/done – Nächsten Lauf als erledigt markieren\n' +
     '/progress – Fortschritt anzeigen\n' +
+    '/sync – Strava-Aktivitäten synchronisieren\n' +
     '/delete DD.MM. – Lauf löschen\n' +
     '/myid – Deine Chat-ID anzeigen\n\n' +
+    'ℹ️ Der „gelaufen"-Status kommt automatisch aus Strava – kein manuelles Abhaken nötig.\n\n' +
     'Oder schreib einfach natürliche Sprache:\n' +
     '"19.5. Halbmarathon Stuttgart"\n' +
     '"Nächsten Dienstag 8km locker"'
@@ -69,11 +70,11 @@ bot.command('myid', (ctx) => {
   ctx.reply(`Deine Chat-ID: ${ctx.chat.id}`);
 });
 
-// /plan – show next runs
+// /plan – show next upcoming (planned) runs
 bot.command('plan', async (ctx) => {
   const weeks = await api('/api/weeks');
-  const allRuns = weeks.flatMap(w => w.runs).filter(r => !r.done).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 7);
-  if (allRuns.length === 0) return ctx.reply('🎉 Alle Läufe erledigt!');
+  const allRuns = weeks.flatMap(w => w.runs).filter(r => r.status === 'planned').sort((a, b) => a.date.localeCompare(b.date)).slice(0, 7);
+  if (allRuns.length === 0) return ctx.reply('🎉 Keine anstehenden Läufe!');
 
   const lines = allRuns.map(r => {
     const d = r.date.split('-');
@@ -82,22 +83,14 @@ bot.command('plan', async (ctx) => {
   ctx.reply('📅 Nächste Läufe:\n\n' + lines.join('\n'));
 });
 
-// /done – mark next run as done
-bot.command('done', async (ctx) => {
-  const weeks = await api('/api/weeks');
-  const next = weeks.flatMap(w => w.runs).filter(r => !r.done).sort((a, b) => a.date.localeCompare(b.date))[0];
-  if (!next) return ctx.reply('🎉 Nichts mehr offen!');
-
-  await api(`/api/runs/${next.id}`, { method: 'PATCH', body: JSON.stringify({ done: 1 }) });
-  const d = next.date.split('-');
-  ctx.reply(`✅ Erledigt: ${d[2]}.${d[1]}. – ${next.text} (${next.km}km)`);
-});
-
-// /progress
+// /progress – derived from the Strava-driven status (same source as the web app)
 bot.command('progress', async (ctx) => {
-  const data = await api('/api/progress');
-  const pct = Math.round((data.done / data.total) * 100);
-  ctx.reply(`📊 Fortschritt: ${data.done}/${data.total} (${pct}%)`);
+  const weeks = await api('/api/weeks');
+  const runs = weeks.flatMap(w => w.runs);
+  const done = runs.filter(r => r.status === 'done').length;
+  const total = runs.filter(r => r.status !== 'skipped').length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  ctx.reply(`📊 Fortschritt: ${done}/${total} gelaufen (${pct}%)`);
 });
 
 // /sync – manually sync Strava activities

@@ -68,7 +68,10 @@ app.get('/api/weeks', (req, res) => {
   for (const s of allStrava) {
     stravaMap[s.run_id] = s;
   }
-  // Attach strava data and accuracy to each run
+  // Today's date (local server time) as YYYY-MM-DD for the "not run yet" cutoff
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  // Attach strava data + accuracy, and derive the Strava-driven status of each run
   for (const week of weeks) {
     for (const run of week.runs) {
       const sd = stravaMap[run.id];
@@ -76,6 +79,15 @@ app.get('/api/weeks', (req, res) => {
         run.strava = sd;
         run.accuracy = strava.calculateAccuracy(run, sd);
       }
+      // Status is derived purely from Strava + date:
+      //  - has Strava data         -> done
+      //  - explicitly skipped       -> skipped (set by the week-move logic in strava.js)
+      //  - past date, no Strava     -> skipped ("nicht gelaufen")
+      //  - today/future, no Strava  -> planned
+      if (sd) run.status = 'done';
+      else if (run.skipped) run.status = 'skipped';
+      else if (run.date < today) run.status = 'skipped';
+      else run.status = 'planned';
     }
   }
   res.json(weeks);

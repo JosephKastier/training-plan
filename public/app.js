@@ -49,14 +49,6 @@ createApp({
       if (data) weeks.value = data;
     }
 
-    async function toggleRun(run) {
-      run.done = run.done ? 0 : 1;
-      await api(`/api/runs/${run.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ done: run.done })
-      });
-    }
-
     function toggleWeek(week) {
       collapsed.value[week] = !collapsed.value[week];
     }
@@ -77,12 +69,33 @@ createApp({
       return `${String(m.getDate()).padStart(2,'0')}.${String(m.getMonth()+1).padStart(2,'0')}. – ${String(s.getDate()).padStart(2,'0')}.${String(s.getMonth()+1).padStart(2,'0')}.`;
     }
 
+    function runKm(r) {
+      // 'done' runs count their actual (Strava) distance; 'skipped' count 0;
+      // 'planned' (today/future) count the planned distance.
+      if (r.status === 'done') return (r.strava && r.strava.actual_km != null) ? r.strava.actual_km : 0;
+      if (r.status === 'skipped') return 0;
+      return r.km;
+    }
+
     function weekKm(wk) {
-      return wk.runs.reduce((sum, r) => sum + r.km, 0);
+      return wk.runs.reduce((sum, r) => sum + runKm(r), 0);
+    }
+
+    function formatKm(km) {
+      // Round to at most 2 decimals, use comma as decimal separator
+      return (Math.round(km * 100) / 100).toString().replace('.', ',');
+    }
+
+    function runKmLabel(r) {
+      // Done runs show planned -> actual; everything else just the planned distance.
+      if (r.status === 'done' && r.strava && r.strava.actual_km != null) {
+        return `${formatKm(r.km)} → ${formatKm(r.strava.actual_km)} km`;
+      }
+      return `${formatKm(r.km)} km`;
     }
 
     function weekDone(wk) {
-      return wk.runs.filter(r => r.done).length;
+      return wk.runs.filter(r => r.status === 'done').length;
     }
 
     function formatDate(dateStr) {
@@ -94,16 +107,17 @@ createApp({
       return typeLabels[type] || type;
     }
 
-    const totalCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.length, 0));
-    const doneCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.done).length, 0));
+    // Progress = runs actually run, out of all runs still in the plan (excluding skipped)
+    const totalCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.status !== 'skipped').length, 0));
+    const doneCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.status === 'done').length, 0));
     const progressPercent = computed(() => totalCount.value ? Math.round(doneCount.value / totalCount.value * 100) : 0);
 
     async function loadAndCollapse() {
       await loadData();
-      // Auto-collapse weeks where all runs are done
+      // Auto-collapse weeks that have no pending (planned) runs left
       const newCollapsed = {};
       for (const wk of weeks.value) {
-        newCollapsed[wk.week] = wk.runs.length > 0 && wk.runs.every(r => r.done);
+        newCollapsed[wk.week] = wk.runs.length > 0 && wk.runs.every(r => r.status !== 'planned');
       }
       collapsed.value = newCollapsed;
     }
@@ -132,7 +146,7 @@ createApp({
       } else {
         const newCollapsed = {};
         for (const wk of weeks.value) {
-          newCollapsed[wk.week] = wk.runs.length > 0 && wk.runs.every(r => r.done);
+          newCollapsed[wk.week] = wk.runs.length > 0 && wk.runs.every(r => r.status !== 'planned');
         }
         collapsed.value = newCollapsed;
       }
@@ -235,8 +249,8 @@ createApp({
     return {
       token, password, loginError, weeks, collapsed, pulling,
       activeFilter, filters, toggleFilter, filteredRuns, filterCount,
-      expandedRun, stravaConnected, toggleStrava,
-      login, toggleRun, toggleWeek, weekKm, weekDone, weekDateRange,
+      expandedRun, stravaConnected, toggleStrava, formatKm, runKmLabel,
+      login, toggleWeek, weekKm, weekDone, weekDateRange,
       formatDate, typeLabel, totalCount, doneCount, progressPercent
     };
   }
