@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+# Serialize deploys: a running deploy finishes before the next starts, and only
+# the most recent push waits in the queue. Prevents two overlapping
+# docker compose runs from racing on container names.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,5 +24,5 @@ jobs:
           script: |
             cd /opt/training-plan
             git pull origin main
-            docker compose up -d --build app bot
+            docker compose up -d --build --remove-orphans app bot
             docker compose restart nginx
