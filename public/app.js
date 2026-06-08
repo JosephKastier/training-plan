@@ -98,6 +98,13 @@ createApp({
       return wk.runs.filter(r => r.status === 'done').length;
     }
 
+    function weekTotal(wk) {
+      // Planned sessions for the week. Exclude move artifacts: a run shifted to
+      // another day is flagged skipped (column) and its replacement counts instead.
+      // Genuinely missed runs (date passed, no Strava) keep counting as planned.
+      return wk.runs.filter(r => !r.skipped).length;
+    }
+
     function formatDate(dateStr) {
       const [y, m, d] = dateStr.split('-');
       return `${d}.${m}.`;
@@ -107,8 +114,8 @@ createApp({
       return typeLabels[type] || type;
     }
 
-    // Progress = runs actually run, out of all runs still in the plan (excluding skipped)
-    const totalCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.status !== 'skipped').length, 0));
+    // Progress = runs actually run, out of all planned sessions (excluding moved runs)
+    const totalCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => !r.skipped).length, 0));
     const doneCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.status === 'done').length, 0));
     const progressPercent = computed(() => totalCount.value ? Math.round(doneCount.value / totalCount.value * 100) : 0);
 
@@ -250,7 +257,7 @@ createApp({
       token, password, loginError, weeks, collapsed, pulling,
       activeFilter, filters, toggleFilter, filteredRuns, filterCount,
       expandedRun, stravaConnected, toggleStrava, formatKm, runKmLabel,
-      login, toggleWeek, weekKm, weekDone, weekDateRange,
+      login, toggleWeek, weekKm, weekDone, weekTotal, weekDateRange,
       formatDate, typeLabel, totalCount, doneCount, progressPercent
     };
   }

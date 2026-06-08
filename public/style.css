@@ -254,16 +254,11 @@ header h1 {
 }
 
 .run-row.done .run-text {
-  text-decoration: line-through;
   opacity: 0.6;
 }
 
 .run-row.skipped {
   opacity: 0.5;
-}
-
-.run-row.skipped .run-text {
-  text-decoration: line-through;
 }
 
 .skipped-label {

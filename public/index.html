@@ -51,7 +51,7 @@
               <span class="week-km">{{ formatKm(weekKm(wk)) }} km</span>
             </div>
             <div class="week-progress">
-              <span>{{ weekDone(wk) }}/{{ wk.runs.length }}</span>
+              <span>{{ weekDone(wk) }}/{{ weekTotal(wk) }}</span>
               <svg class="chevron" :class="{ open: !collapsed[wk.week] }" viewBox="0 0 24 24" width="20" height="20"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
             </div>
           </div>
