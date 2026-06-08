@@ -119,6 +119,13 @@ createApp({
     const doneCount = computed(() => weeks.value.reduce((s, w) => s + w.runs.filter(r => r.status === 'done').length, 0));
     const progressPercent = computed(() => totalCount.value ? Math.round(doneCount.value / totalCount.value * 100) : 0);
 
+    // Kilometers actually run (Strava distance of done runs)
+    const ranKm = computed(() => weeks.value.reduce((s, w) =>
+      s + w.runs.filter(r => r.status === 'done').reduce((a, r) => a + (r.strava && r.strava.actual_km != null ? r.strava.actual_km : 0), 0), 0));
+    // Kilometers still ahead (planned distance of upcoming runs)
+    const upcomingKm = computed(() => weeks.value.reduce((s, w) =>
+      s + w.runs.filter(r => r.status === 'planned').reduce((a, r) => a + r.km, 0), 0));
+
     async function loadAndCollapse() {
       await loadData();
       // Auto-collapse weeks that have no pending (planned) runs left
@@ -258,7 +265,7 @@ createApp({
       activeFilter, filters, toggleFilter, filteredRuns, filterCount,
       expandedRun, stravaConnected, toggleStrava, formatKm, runKmLabel,
       login, toggleWeek, weekKm, weekDone, weekTotal, weekDateRange,
-      formatDate, typeLabel, totalCount, doneCount, progressPercent
+      formatDate, typeLabel, totalCount, doneCount, progressPercent, ranKm, upcomingKm
     };
   }
 }).mount('#app');

@@ -36,6 +36,7 @@
           <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
         </div>
         <p class="progress-text">{{ doneCount }}/{{ totalCount }} erledigt ({{ progressPercent }}%)</p>
+        <p class="progress-km">🏃 {{ formatKm(ranKm) }} km gelaufen · 📋 {{ formatKm(upcomingKm) }} km offen</p>
         <div class="filters">
           <button v-for="f in filters" :key="f.type" class="filter-btn" :class="[f.type, { active: activeFilter === f.type }]" @click="toggleFilter(f.type)">{{ f.label }} <span class="filter-count">{{ filterCount(f.type) }}</span></button>
           <a v-if="!stravaConnected" href="/auth/strava" class="strava-btn">Strava verbinden</a>
