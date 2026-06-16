@@ -86,12 +86,51 @@ createApp({
       return (Math.round(km * 100) / 100).toString().replace('.', ',');
     }
 
+    function formatDuration(totalMinutes) {
+      if (totalMinutes < 60) {
+        return `~${Math.round(totalMinutes)} min`;
+      }
+      const hours = Math.floor(totalMinutes / 60);
+      const mins = Math.round(totalMinutes % 60);
+      return `~${hours}:${String(mins).padStart(2, '0')} h`;
+    }
+
+    function parsePaceSeconds(paceStr) {
+      const parts = paceStr.split(':');
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+
+    function estimatedDuration(r) {
+      // For done runs with Strava data, use actual elapsed_time
+      if (r.status === 'done' && r.strava && r.strava.elapsed_time != null) {
+        return formatDuration(r.strava.elapsed_time / 60);
+      }
+      // Otherwise estimate from km and pace
+      if (!r.pace || !r.km) return '';
+      const paceRange = r.pace.match(/(\d+):(\d+)/g);
+      if (!paceRange || paceRange.length === 0) return '';
+      let avgPaceSeconds;
+      if (paceRange.length >= 2) {
+        const fast = parsePaceSeconds(paceRange[0]);
+        const slow = parsePaceSeconds(paceRange[1]);
+        avgPaceSeconds = (fast + slow) / 2;
+      } else {
+        avgPaceSeconds = parsePaceSeconds(paceRange[0]);
+      }
+      return formatDuration((avgPaceSeconds * r.km) / 60);
+    }
+
     function runKmLabel(r) {
       // Done runs show planned -> actual; everything else just the planned distance.
+      let label;
       if (r.status === 'done' && r.strava && r.strava.actual_km != null) {
-        return `${formatKm(r.km)} → ${formatKm(r.strava.actual_km)} km`;
+        label = `${formatKm(r.km)} → ${formatKm(r.strava.actual_km)} km`;
+      } else {
+        label = `${formatKm(r.km)} km`;
       }
-      return `${formatKm(r.km)} km`;
+      const dur = estimatedDuration(r);
+      if (dur) label += ` · ${dur}`;
+      return label;
     }
 
     function weekDone(wk) {
